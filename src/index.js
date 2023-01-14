@@ -10,15 +10,62 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(user => user.username === username);
+
+  if(!user) {
+    return response.status(400).json({ error: 'User not found.' });
+  }
+
+  request.user = user;
+
+  next();
+
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(user => user.username === username);
+
+  if(user.todos.length > 9 && user.pro == false) {
+    return response.status(400).json({ error: "You have already reached the limit of available toDo's." });
+  }
+
+  next();
+
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id: todoId } = request.params;
+
+  const user = users.find(user => user.username === username);
+
+  if(!user) {
+    return response.status(400).json({ error: 'User not found.' });
+  }
+
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+  if(!regexExp.test(todoId)) {
+    return response.status(400).json({ error: 'ToDo not found.' });
+  }
+
+  const todo = user.todos.find(todo => todo.id === todoId)
+
+  if(!todo) {
+    return response.status(400).json({ error: 'ToDo not found.' });
+  }
+
+  const todoPosition = user.todos.indexOf(todo);
+
+  request.user = user
+  request.todo = user.todos[todoPosition]
+
+  next();
+
 }
 
 function findUserById(request, response, next) {
