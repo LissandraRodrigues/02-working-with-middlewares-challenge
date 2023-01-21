@@ -14,8 +14,8 @@ function checksExistsUserAccount(request, response, next) {
 
   const user = users.find(user => user.username === username);
 
-  if(!user) {
-    return response.status(400).json({ error: 'User not found.' });
+  if (!user) {
+    return response.status(404).json({ error: 'User not found.' });
   }
 
   request.user = user;
@@ -29,9 +29,11 @@ function checksCreateTodosUserAvailability(request, response, next) {
 
   const user = users.find(user => user.username === username);
 
-  if(user.todos.length > 9 && user.pro == false) {
-    return response.status(400).json({ error: "You have already reached the limit of available toDo's." });
+  if (user.todos.length > 9 && user.pro == false) {
+    return response.status(403).json({ error: "You have already reached the limit of available toDo's." });
   }
+
+  request.user = user;
 
   next();
 
@@ -43,20 +45,20 @@ function checksTodoExists(request, response, next) {
 
   const user = users.find(user => user.username === username);
 
-  if(!user) {
-    return response.status(400).json({ error: 'User not found.' });
+  if (!user) {
+    return response.status(404).json({ error: 'User not found.' });
   }
 
   const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
 
-  if(!regexExp.test(todoId)) {
+  if (!regexExp.test(todoId)) {
     return response.status(400).json({ error: 'ToDo not found.' });
   }
 
   const todo = user.todos.find(todo => todo.id === todoId)
 
-  if(!todo) {
-    return response.status(400).json({ error: 'ToDo not found.' });
+  if (!todo) {
+    return response.status(404).json({ error: 'ToDo not found.' });
   }
 
   const todoPosition = user.todos.indexOf(todo);
@@ -69,7 +71,17 @@ function checksTodoExists(request, response, next) {
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(user => user.id === id);
+
+  if (!user) {
+    return response.status(404).json({ error: 'User not found.' });
+  }
+
+  request.user = user;
+
+  next();
 }
 
 app.post('/users', (request, response) => {
