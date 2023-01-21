@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 
-const { v4: uuidv4, validate } = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 app.use(express.json());
@@ -25,17 +25,14 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  const { username } = request.headers;
 
-  const user = users.find(user => user.username === username);
+  const { user } = request;
 
-  if (user.todos.length > 9 && user.pro == false) {
-    return response.status(403).json({ error: "You have already reached the limit of available toDo's." });
+  if ((!user.pro && user.todos.length < 9) || user.pro) {
+    next();
   }
 
-  request.user = user;
-
-  next();
+  return response.status(403).json({ error: "You have already reached the limit of available toDo's." });
 
 }
 
